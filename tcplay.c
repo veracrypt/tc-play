@@ -465,7 +465,7 @@ process_hdr(const char *dev, int flags, unsigned char *pass, int passlen,
 	else {
 		veracrypt_mode = 0;
 	}
-	
+
 	if (((TC_FLAG_SET(flags, SYS)) || (TC_FLAG_SET(flags, FDE))) && !hidden_header) {
 		// use only PRF with iterations count for boot encryption
 		// except in case of hidden operating system which uses normal iterations count
@@ -475,7 +475,7 @@ process_hdr(const char *dev, int flags, unsigned char *pass, int passlen,
 		// use only PRF with iterations count for standard encryption
 		pbkdf_prf_algos = veracrypt_mode? pbkdf_prf_algos_standard_vc : pbkdf_prf_algos_standard_tc;
 	}
-	
+
 	/* Start search for correct algorithm combination */
 	found = 0;
 	for (i = 0; !found && pbkdf_prf_algos[i].name != NULL; i++) {
@@ -567,7 +567,7 @@ create_volume(struct tcplay_opts *opts)
 	ehdr = hehdr = NULL;
 	ehdr_backup = hehdr_backup = NULL;
 	ret = -1; /* Default to returning error */
-	
+
 	if (TC_FLAG_SET(opts->flags, VERACRYPT_MODE))
 		veracrypt_mode = 1;
 
@@ -1815,7 +1815,12 @@ dm_setup(const char *mapname, struct tcplay_info *info)
 			goto out;
 		}
 
-		snprintf(uu, 1024, "CRYPT-TCPLAY-%s", uu_temp);
+		if (TC_FLAG_SET(info->flags, VERACRYPT_MODE)){
+			snprintf(uu, 1024, "CRYPT-VCRYPT-%s-%s", uu_temp ,map);
+		} else {
+			snprintf(uu, 1024, "CRYPT-TCRYPT-%s-%s", uu_temp,map);
+		}
+		
 		free(uu_temp);
 
 		if ((dm_task_set_uuid(dmt, uu)) == 0) {
@@ -2055,7 +2060,7 @@ struct pbkdf_prf_algo *
 check_prf_algo(int veracrypt_mode, const char *algo, int quiet)
 {
 	int i, found = 0;
-	struct pbkdf_prf_algo *pbkdf_prf_algos = 
+	struct pbkdf_prf_algo *pbkdf_prf_algos =
 		(veracrypt_mode)? pbkdf_prf_algos_standard_vc : pbkdf_prf_algos_standard_tc;
 
 	for (i = 0; pbkdf_prf_algos[i].name != NULL; i++) {
